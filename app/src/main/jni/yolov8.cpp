@@ -500,54 +500,35 @@ int Yolov8::draw(cv::Mat& rgb, const std::vector<Yolov8Object>& objects)
             {255, 0, 56},
     };
 
-    for (int i = 0; i < objects.size(); i++) {
-        const Yolov8Object& obj = objects[i];
-        const unsigned char* color = colors[obj.label];
-
-        cv::Scalar cc(color[0], color[1], color[2]);
-
-        fprintf(stderr, "%d = %.5f at %.2f %.2f %.2f x %.2f\n", obj.label, obj.prob,
-                obj.rect.x, obj.rect.y, obj.rect.width, obj.rect.height);
-        #pragma omp parallel for
-        for(int y = 0; y < rgb.rows; y++){
-            unsigned char* image_ptr = rgb.ptr(y);
-            const float* mask_ptr = obj.cv_mask.ptr<float>(y);
-            for(int x = 0; x < rgb.cols; x++){
-                if(mask_ptr[x] >= 0.5){
-                    image_ptr[0] = cv::saturate_cast<unsigned char>(image_ptr[0] * 0.5 + color[2] * 0.5);
-                    image_ptr[1] = cv::saturate_cast<unsigned char>(image_ptr[1] * 0.5 + color[1] * 0.5);
-                    image_ptr[2] = cv::saturate_cast<unsigned char>(image_ptr[2] * 0.5 + color[0] * 0.5);
-                }
-                image_ptr += 3;
-            }
-        }
-
-//        static const char* class_names[] = {
-//                "da",
-//                "ll",
-//        };
-//        cv::rectangle(rgb, obj.rect, cc, 2);
-//
-//        char text[256];
-//        sprintf(text, "%s %.1f%%", class_names[obj.label], obj.prob * 100);
-//
-//        int baseLine = 0;
-//        cv::Size label_size = cv::getTextSize(text, cv::FONT_HERSHEY_SIMPLEX, 0.5, 1, &baseLine);
-//
-//        int x = obj.rect.x;
-//        int y = obj.rect.y - label_size.height - baseLine;
-//        if (y < 0)
-//            y = 0;
-//        if (x + label_size.width > rgb.cols)
-//            x = rgb.cols - label_size.width;
-//
-//        cv::rectangle(rgb, cv::Rect(cv::Point(x, y), cv::Size(label_size.width, label_size.height + baseLine)),
-//                      cc, -1);
-//
-//        cv::putText(rgb, text, cv::Point(x, y + label_size.height),
-//                    cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 255, 255));
+    cv::Mat masks[objects.size()], floatMask, setMask;
+    for (size_t i = 0; i < objects.size(); i++) {
+        const Yolov8Object &obj = objects[i];
+        obj.cv_mask.convertTo(floatMask, CV_32FC1);
+        cv::threshold(floatMask, setMask, 0.5, obj.label + 1, cv::THRESH_BINARY);
+        setMask.convertTo(setMask, CV_8UC1);
+        masks[i] = setMask;
     }
-    
-    
+
+    cv::Mat mask = cv::Mat::zeros(cv::Size(rgb.cols, rgb.rows), CV_8UC1);
+    for (int i = 0; i < objects.size(); ++i) {
+        cv::max(mask, masks[i], mask);
+    }
+
+    const unsigned char* color;
+    for (int y = 0; y < rgb.rows; y++) {
+        uchar* image_ptr = rgb.ptr(y);
+        const auto* mask_ptr = mask.ptr<uchar>(y);
+        for (int x = 0; x < rgb.cols; x++) {
+            int mask_value = mask_ptr[x];
+            if (mask_value == 1 || mask_value == 2) {
+                color = colors[mask_value - 1];
+                image_ptr[0] = cv::saturate_cast<uchar>(image_ptr[0] * 0.5 + color[2] * 0.5);
+                image_ptr[1] = cv::saturate_cast<uchar>(image_ptr[1] * 0.5 + color[1] * 0.5);
+                image_ptr[2] = cv::saturate_cast<uchar>(image_ptr[2] * 0.5 + color[0] * 0.5);
+            }
+            image_ptr += 3;
+        }
+    }
+
     return 0;
 }
