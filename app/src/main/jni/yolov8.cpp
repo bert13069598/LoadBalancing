@@ -515,6 +515,8 @@ int Yolov8::draw(cv::Mat& rgb, const std::vector<Yolov8Object>& objects)
     }
 
     const unsigned char* color;
+    int warningA = 0;
+    bool warningB = false;
     for (int y = 0; y < rgb.rows; y++) {
         uchar* image_ptr = rgb.ptr(y);
         const auto* mask_ptr = mask.ptr<uchar>(y);
@@ -526,8 +528,37 @@ int Yolov8::draw(cv::Mat& rgb, const std::vector<Yolov8Object>& objects)
                 image_ptr[1] = cv::saturate_cast<uchar>(image_ptr[1] * 0.5 + color[1] * 0.5);
                 image_ptr[2] = cv::saturate_cast<uchar>(image_ptr[2] * 0.5 + color[0] * 0.5);
             }
+            if (y == static_cast<int>((rgb.rows * 2) / 3) &&
+                x > static_cast<int>((rgb.cols * 1) / 3) &&
+                x < static_cast<int>((rgb.cols * 2) / 3)) {
+                std::fill_n(image_ptr, 3, 255);
+                if (mask_value == 0 || mask_value == 2) {
+                    image_ptr[1] = 127;
+                    image_ptr[2] = 0;
+                    warningA += 1;
+                    if (x > static_cast<int>(static_cast<float>(rgb.cols * 2) / 5) &&
+                        x < static_cast<int>(static_cast<float>(rgb.cols * 3) / 5)){
+                        warningB = true;
+                    }
+                }
+            }
             image_ptr += 3;
         }
+    }
+    float ratio = static_cast<float>(warningA) / (300 - warningA);
+    __android_log_print(ANDROID_LOG_ERROR, "ratio", "%d %f\n", warningA, ratio);
+    if ((ratio > 0.45 && ratio < 1) || (warningB && !cvIsInf(ratio))) {
+        char text[256] = "Lane Departure Warning";
+
+        cv::Size label_size = cv::getTextSize(text, cv::FONT_HERSHEY_SIMPLEX, 0.5, 1, 0);
+
+        int x = static_cast<int>((rgb.cols - label_size.width)/ 2);
+        int y = static_cast<int>(rgb.rows / 10);
+        cv::rectangle(rgb, cv::Rect(cv::Point(x, y), cv::Size(label_size.width, label_size.height + 6)),
+                      cv::Scalar(255, 0, 0), -1);
+
+        cv::putText(rgb, text, cv::Point(x, y + label_size.height),cv::FONT_HERSHEY_SIMPLEX,
+                     0.5, cv::Scalar(255, 255, 255));
     }
 
     return 0;
