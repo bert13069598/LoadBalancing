@@ -30,11 +30,11 @@ public class CameraPreview extends AppCompatActivity {
     private int port_index;
     private ExecutorService executorService;
     // detection
-     private final NanoDetNcnn nanodetncnn = new NanoDetNcnn();
-     private String bboxdata =" ";
+//     private final NanoDetNcnn nanodetncnn = new NanoDetNcnn();
+//     private String bboxdata =" ";
     // segmentation
-//    private final Yolov8Ncnn yolov8ncnn = new Yolov8Ncnn();
-//    private Bitmap maskdata;
+    private final Yolov8Ncnn yolov8ncnn = new Yolov8Ncnn();
+    private Bitmap maskdata;
     private Spinner spinnerCPUGPU;
     private int current_cpugpu = 0;
     int corePoolSize = 2;
@@ -58,7 +58,7 @@ public class CameraPreview extends AppCompatActivity {
                 @Override
                 public void run() {
                     //send_connect(port_index);
-                    if(bboxdata!=null){
+                    if(maskdata!=null){
                         send_connect(port_index);
                     }
                 }
@@ -100,9 +100,9 @@ public class CameraPreview extends AppCompatActivity {
 
     private void reload() {
         // detection
-        boolean ret_init_model = nanodetncnn.loadModel(getAssets(), current_cpugpu);
+//        boolean ret_init_model = nanodetncnn.loadModel(getAssets(), current_cpugpu);
         // segmentation
-//        boolean ret_init_model = yolov8ncnn.loadModel(getAssets(), current_cpugpu);
+        boolean ret_init_model = yolov8ncnn.loadModel(getAssets(), current_cpugpu);
         if (!ret_init_model)
             Log.e(TAG, "model load failed");
     }
@@ -147,61 +147,61 @@ public class CameraPreview extends AppCompatActivity {
 
 
     // detection
-    private void send_connect(int port_index){
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-
-                String stringValue = bboxdata; // BBOX 데이터 전송
-
-                if (stringValue == null) {
-                    stringValue = "";
-                }
-
-                try {
-                    Socket clientSocket = new Socket(master_IP, PORT[port_index]);
-                    BufferedOutputStream outToServer = new BufferedOutputStream(clientSocket.getOutputStream());
-
-                    byte[] byteArray = stringValue.getBytes();
-
-                    outToServer.write(byteArray);
-                    outToServer.flush(); // 버퍼 비우기
-                    clientSocket.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }).start();
-    }
-
-    // segmentation
 //    private void send_connect(int port_index){
 //        new Thread(new Runnable() {
 //            @Override
 //            public void run() {
+//
+//                String stringValue = bboxdata; // BBOX 데이터 전송
+//
+//                if (stringValue == null) {
+//                    stringValue = "";
+//                }
+//
 //                try {
-//                    Socket clientSocket = new Socket(master_IP, 2468);
-//
-//                    // seg이미지 전송
+//                    Socket clientSocket = new Socket(master_IP, PORT[port_index]);
 //                    BufferedOutputStream outToServer = new BufferedOutputStream(clientSocket.getOutputStream());
-//                    ByteArrayOutputStream stream = new ByteArrayOutputStream();
-//                    maskdata.compress(Bitmap.CompressFormat.JPEG, 70, stream);
 //
-//                    byte[] byteArray = stream.toByteArray();
-//                    //maskdata.recycle();
+//                    byte[] byteArray = stringValue.getBytes();
 //
 //                    outToServer.write(byteArray);
 //                    outToServer.flush(); // 버퍼 비우기
 //                    clientSocket.close();
-//
-//                    Log.e("Send SEG", "Success!");
 //                } catch (IOException e) {
-//                    Log.e("Send SEG", "SocketThread runs on an error!");
 //                    e.printStackTrace();
 //                }
 //            }
 //        }).start();
 //    }
+
+    // segmentation
+    private void send_connect(int port_index){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Socket clientSocket = new Socket(master_IP, 2468);
+
+                    // seg이미지 전송
+                    BufferedOutputStream outToServer = new BufferedOutputStream(clientSocket.getOutputStream());
+                    ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                    maskdata.compress(Bitmap.CompressFormat.JPEG, 70, stream);
+
+                    byte[] byteArray = stream.toByteArray();
+                    //maskdata.recycle();
+
+                    outToServer.write(byteArray);
+                    outToServer.flush(); // 버퍼 비우기
+                    clientSocket.close();
+
+                    Log.e("Send SEG", "Success!");
+                } catch (IOException e) {
+                    Log.e("Send SEG", "SocketThread runs on an error!");
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+    }
 
     // 수신부
     private void DisconnectServer(){
@@ -226,9 +226,9 @@ public class CameraPreview extends AppCompatActivity {
                         @Override
                         public void run() {
                             // detection
-                            bboxdata = nanodetncnn.predict(detectView, receiveBitmap);
+//                            bboxdata = nanodetncnn.predict(detectView, receiveBitmap);
                             // segmentation
-//                            maskdata = yolov8ncnn.predict(detectView, receiveBitmap);
+                            maskdata = yolov8ncnn.predict(detectView, receiveBitmap);
                         }
                     });
 
@@ -252,7 +252,6 @@ public class CameraPreview extends AppCompatActivity {
 
     private void send_disconnect(int port_index){
         new Thread(new Runnable() {
-            // detection
             @Override
             public void run() {
                 String stringValue = "off";
