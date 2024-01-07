@@ -30,8 +30,8 @@ public class CameraPreview extends AppCompatActivity {
     private int port_index;
     private ExecutorService executorService;
     // detection
-    private final NanoDetNcnn nanodetncnn = new NanoDetNcnn();
-    private String bboxdata =" ";
+     private final NanoDetNcnn nanodetncnn = new NanoDetNcnn();
+     private String bboxdata =" ";
     // segmentation
 //    private final Yolov8Ncnn yolov8ncnn = new Yolov8Ncnn();
 //    private Bitmap maskdata;
@@ -46,7 +46,6 @@ public class CameraPreview extends AppCompatActivity {
 
     // 데이터 송신
     private final String master_IP = "192.168.43.1";
-    //private final String master_IP = "192.168.43.91"
 
     private final int[] PORT = {13579, 2468}; // 결과값 송신을 위한 포트
     private boolean sendRunning = false;
@@ -58,7 +57,10 @@ public class CameraPreview extends AppCompatActivity {
             executorService.submit(new Runnable() {
                 @Override
                 public void run() {
-                    send_connect(port_index);
+                    //send_connect(port_index);
+                    if(bboxdata!=null){
+                        send_connect(port_index);
+                    }
                 }
             });
             handler.postDelayed(this, 10);
@@ -142,7 +144,9 @@ public class CameraPreview extends AppCompatActivity {
         executorService.shutdown();
         handler.removeCallbacksAndMessages(null);
     }
-// detection
+
+
+    // detection
     private void send_connect(int port_index){
         new Thread(new Runnable() {
             @Override
@@ -165,7 +169,6 @@ public class CameraPreview extends AppCompatActivity {
                     clientSocket.close();
                 } catch (IOException e) {
                     e.printStackTrace();
-                    Log.e("SendData", "Error sending data: " + e.getMessage());
                 }
             }
         }).start();
@@ -176,19 +179,24 @@ public class CameraPreview extends AppCompatActivity {
 //        new Thread(new Runnable() {
 //            @Override
 //            public void run() {
-//                ByteArrayOutputStream stream = new ByteArrayOutputStream();
-//                maskdata.compress(Bitmap.CompressFormat.JPEG, 70, stream);
-//
-//                byte[] byteArray = stream.toByteArray();
-//
 //                try {
-//                    Socket clientSocket = new Socket(master_IP, PORT[port_index]);
+//                    Socket clientSocket = new Socket(master_IP, 2468);
+//
+//                    // seg이미지 전송
 //                    BufferedOutputStream outToServer = new BufferedOutputStream(clientSocket.getOutputStream());
+//                    ByteArrayOutputStream stream = new ByteArrayOutputStream();
+//                    maskdata.compress(Bitmap.CompressFormat.JPEG, 70, stream);
+//
+//                    byte[] byteArray = stream.toByteArray();
+//                    //maskdata.recycle();
 //
 //                    outToServer.write(byteArray);
 //                    outToServer.flush(); // 버퍼 비우기
 //                    clientSocket.close();
+//
+//                    Log.e("Send SEG", "Success!");
 //                } catch (IOException e) {
+//                    Log.e("Send SEG", "SocketThread runs on an error!");
 //                    e.printStackTrace();
 //                }
 //            }
@@ -218,7 +226,7 @@ public class CameraPreview extends AppCompatActivity {
                         @Override
                         public void run() {
                             // detection
-                              bboxdata = nanodetncnn.predict(detectView, receiveBitmap);
+                            bboxdata = nanodetncnn.predict(detectView, receiveBitmap);
                             // segmentation
 //                            maskdata = yolov8ncnn.predict(detectView, receiveBitmap);
                         }
@@ -261,25 +269,6 @@ public class CameraPreview extends AppCompatActivity {
                     e.printStackTrace();
                 }
             }
-            // segmentation
-//            @Override
-//            public void run() {
-//                ByteArrayOutputStream stream = new ByteArrayOutputStream();
-//                maskdata.compress(Bitmap.CompressFormat.JPEG, 70, stream);
-//                byte[] byteArray = stream.toByteArray();
-//
-//                try {
-//                    Socket clientSocket = new Socket(master_IP, PORT[port_index]);
-//                    BufferedOutputStream outToServer = new BufferedOutputStream(clientSocket.getOutputStream());
-//
-//                    outToServer.write(byteArray);
-//                    outToServer.flush(); // 버퍼 비우기
-//                    clientSocket.close();
-//
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
-//            }
         }).start();
     }
 
