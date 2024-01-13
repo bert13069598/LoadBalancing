@@ -9,7 +9,7 @@ public class Ncnn {
                                     int modelid,
                                     int cpugpu);
 
-    public native String predict_bbox(ImageView imageView, Bitmap bitmap);
+    public native String predict_det(ImageView imageView, Bitmap bitmap);
 
     public native Bitmap predict_seg(ImageView imageView, Bitmap bitmap);
 

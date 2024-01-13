@@ -188,7 +188,7 @@ Java_com_example_demoproject_Ncnn_loadModel(JNIEnv *env,
 
 
 // detection
-JNIEXPORT jstring JNICALL Java_com_example_demoproject_Ncnn_predict_1bbox(JNIEnv *env,
+JNIEXPORT jstring JNICALL Java_com_example_demoproject_Ncnn_predict_1det(JNIEnv *env,
                                                                            jobject thiz,
                                                                            jobject imageView,
                                                                            jobject bitmap)

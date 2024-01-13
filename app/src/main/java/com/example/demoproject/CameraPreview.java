@@ -65,7 +65,7 @@ public class CameraPreview extends AppCompatActivity {
                 @Override
                 public void run() {
                     if(port_index == 0){
-                        send_connect_bbox(port_index);
+                        send_connect_det(port_index);
                     }
                     else if(port_index == 1){
                         if(maskdata!=null){
@@ -160,7 +160,7 @@ public class CameraPreview extends AppCompatActivity {
 
 
     // detection
-    private void send_connect_bbox(int port_index){
+    private void send_connect_det(int port_index){
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -244,7 +244,7 @@ public class CameraPreview extends AppCompatActivity {
                             // segmentation
                                 //maskdata = yolov8ncnn.predict(detectView, receiveBitmap);
                             if(port_index==0){
-                                bboxdata = model.predict_bbox(detectView, receiveBitmap);
+                                bboxdata = model.predict_det(detectView, receiveBitmap);
                             }
                             else if(port_index==1){
                                 maskdata = model.predict_seg(detectView, receiveBitmap);

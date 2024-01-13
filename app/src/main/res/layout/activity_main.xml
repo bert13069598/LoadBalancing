@@ -82,8 +82,8 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Device1(BBOX)"
                     android:layout_marginLeft="10dp"
+                    android:text="Device1(DET)"
                     android:textSize="25dp"/>
 
                 <Switch
@@ -106,9 +106,9 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Device2(SEG)   "
+                    android:text="Device2(SEG)"
                     android:layout_marginLeft="10dp"
-                    android:textSize="25dp"/>
+                    android:textSize="25dp" />
 
                 <Switch
                     android:id="@+id/device_switch2"
