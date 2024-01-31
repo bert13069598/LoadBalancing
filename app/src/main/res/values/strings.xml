@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">DemoProject</string>
+    <string name="app_name">LBServer</string>
     <string-array name="model_array">
     </string-array>
     <string-array name="cpugpu_array">

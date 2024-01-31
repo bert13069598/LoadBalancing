@@ -48,27 +48,13 @@ public class MainActivity extends AppCompatActivity {
         switch1 = findViewById(R.id.device_switch1);
         switch2 = findViewById(R.id.device_switch2);
 
+        view_connect_device();
+
         // 검색 버튼 눌렀을 때
         scanButton.setOnClickListener(new View.OnClickListener() {
-            @SuppressLint("SetTextI18n")
             @Override
             public void onClick(View view) {
-                String ipList = getConnectedDevices();
-                if (ipList.isEmpty()) {
-                    textView.setText("No devices connected");
-                } else {
-                    //Log.d("MainActivity",ipList);
-                    String[] list = ipList.split("\n");
-                    //Log.d("MainActivity",list[1]);
-                    list = list[1].split(" ");
-                    //Log.d("MainActivity",list[3]);
-                    if (list[3].equals(master_IP))
-                    {
-                        textView.setText(list[3]); // master의 ip
-                    } else {
-                        textView.setText("You should connect Master Device");
-                    }
-                }
+                view_connect_device();
             }
         });
 
@@ -78,7 +64,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 switch (port_index){
                     case 0:
-                        System.out.println("Devide를 선택해 주세요");
+                        Toast.makeText(MainActivity.this, "Choose at least 1 option.",Toast.LENGTH_SHORT).show();
                         break;
 
                     // Device1
@@ -99,10 +85,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
-                    // 스위치가 켜진 경우
                     port_index = 1;
                 } else {
-                    // 스위치가 꺼진 경우
                     port_index = 0;
                 }
             }
@@ -113,10 +97,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
-                    // 스위치가 켜진 경우
                     port_index = 2;
                 } else {
-                    // 스위치가 꺼진 경우
                     port_index = 0;
                 }
             }
@@ -124,18 +106,32 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    @SuppressLint("SetTextI18n")
+    private void view_connect_device() {
+        String ipList = getConnectedDevices();
+        if (ipList.isEmpty()) {
+            textView.setText("No devices connected.");
+        } else {
+            if (ipList.equals(master_IP))
+            {
+                textView.setText(ipList); // master의 ip
+            } else {
+                textView.setText("You should connect Master Device.");
+            }
+
+        }
+    }
+
     // TedPermission 권한 체크
     private void setPermission() {
         PermissionListener permission = new PermissionListener() {
             @Override
             public void onPermissionGranted() { // 설정해 놓은 위험권한들이 허용 되었을 경우
-                Toast.makeText(MainActivity.this, "권한이 허용 되었습니다.",Toast.LENGTH_SHORT).show();
-                Log.e("권한", "권한 허가 상태");
+                Toast.makeText(MainActivity.this, "Permission allowed.",Toast.LENGTH_SHORT).show();
             }
             @Override
             public void onPermissionDenied(List<String> deniedPermissions) { // 설정해 놓은 위험권한들이 허용되지 않았을 경우우
-                Toast.makeText(MainActivity.this, "권한이 거부 되었습니다.",Toast.LENGTH_SHORT).show();
-                Log.e("권한", "권한 거부 상태");
+                Toast.makeText(MainActivity.this, "Permission denied.",Toast.LENGTH_SHORT).show();
             }
         };
         TedPermission.with(MainActivity.this)
@@ -148,7 +144,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private String getConnectedDevices() {
-        return "\n   192.168.43.1";
+        return "192.168.43.1";
     }
 
     private InetAddress intToInetAddress(int hostAddress) {
