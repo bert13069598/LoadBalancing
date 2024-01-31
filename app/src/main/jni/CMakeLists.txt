@@ -1,6 +1,6 @@
 project(nanodetncnn)
 
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.22.1)
 
 set(OpenCV_DIR ${CMAKE_SOURCE_DIR}/opencv-mobile-4.8.0-android/sdk/native/jni)
 find_package(OpenCV REQUIRED core imgproc)
