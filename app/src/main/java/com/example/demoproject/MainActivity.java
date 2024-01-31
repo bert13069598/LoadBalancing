@@ -48,27 +48,13 @@ public class MainActivity extends AppCompatActivity {
         switch1 = findViewById(R.id.device_switch1);
         switch2 = findViewById(R.id.device_switch2);
 
+        view_connect_device();
+
         // 검색 버튼 눌렀을 때
         scanButton.setOnClickListener(new View.OnClickListener() {
-            @SuppressLint("SetTextI18n")
             @Override
             public void onClick(View view) {
-                String ipList = getConnectedDevices();
-                if (ipList.isEmpty()) {
-                    textView.setText("No devices connected");
-                } else {
-                    //Log.d("MainActivity",ipList);
-                    String[] list = ipList.split("\n");
-                    //Log.d("MainActivity",list[1]);
-                    list = list[1].split(" ");
-                    //Log.d("MainActivity",list[3]);
-                    if (list[3].equals(master_IP))
-                    {
-                        textView.setText(list[3]); // master의 ip
-                    } else {
-                        textView.setText("You should connect Master Device");
-                    }
-                }
+                view_connect_device();
             }
         });
 
@@ -124,6 +110,22 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    @SuppressLint("SetTextI18n")
+    private void view_connect_device() {
+        String ipList = getConnectedDevices();
+        if (ipList.isEmpty()) {
+            textView.setText("No devices connected.");
+        } else {
+            if (ipList.equals(master_IP))
+            {
+                textView.setText(ipList); // master의 ip
+            } else {
+                textView.setText("You should connect Master Device.");
+            }
+
+        }
+    }
+
     // TedPermission 권한 체크
     private void setPermission() {
         PermissionListener permission = new PermissionListener() {
@@ -148,7 +150,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private String getConnectedDevices() {
-        return "\n   192.168.43.1";
+        return "192.168.43.1";
     }
 
     private InetAddress intToInetAddress(int hostAddress) {
