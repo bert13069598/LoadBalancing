@@ -18,8 +18,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="right"
-            android:layout_marginLeft="10dp"
-            android:layout_marginRight="5dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="5dp"
             android:layout_weight="1"
             android:text="검색"
             app:backgroundTint="#000000" />
@@ -28,8 +28,8 @@
             android:id="@+id/server_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="5dp"
-            android:layout_marginRight="10dp"
+            android:layout_marginStart="5dp"
+            android:layout_marginEnd="10dp"
             android:layout_weight="1"
             android:text="수신"
             app:backgroundTint="#000000" />
@@ -38,7 +38,7 @@
     // 하단 Layout
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
         android:layout_weight="7"
         android:orientation="vertical">
 
@@ -50,8 +50,8 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="연결된 기기 IP : "
-                android:layout_marginLeft="5dp"/>
+                android:text="Connected device IP : "
+                android:layout_marginStart="10dp"/>
             <TextView
                 android:id="@+id/state_textview"
                 android:layout_width="wrap_content"
@@ -67,10 +67,11 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Device를 선택하세요"
+                android:text="Choose the option."
                 android:layout_marginTop="20dp"
                 android:layout_marginBottom="5dp"
-                android:textSize="15dp"/>
+                android:textSize="15sp"
+                android:layout_marginStart="10dp"/>
 
             // Device1
             <LinearLayout
@@ -82,8 +83,8 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginLeft="10dp"
-                    android:text="Device1(DET)"
+                    android:layout_marginStart="10dp"
+                    android:text="Option1 (DET)"
                     android:textSize="25dp"/>
 
                 <Switch
@@ -91,8 +92,9 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
-                    android:layout_marginLeft="10dp"
-                    android:textSize="25dp"/>
+                    android:layout_marginStart="10dp"
+                    android:textSize="25sp"
+                    tools:ignore="UseSwitchCompatOrMaterialXml" />
             </LinearLayout>
 
             // Device2
@@ -106,17 +108,18 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Device2(SEG)"
-                    android:layout_marginLeft="10dp"
-                    android:textSize="25dp" />
+                    android:text="Option2 (SEG)"
+                    android:layout_marginStart="10dp"
+                    android:textSize="25sp" />
 
                 <Switch
                     android:id="@+id/device_switch2"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
-                    android:layout_marginLeft="10dp"
-                    android:textSize="25dp"/>
+                    android:layout_marginStart="10dp"
+                    android:textSize="25sp"
+                    tools:ignore="UseSwitchCompatOrMaterialXml" />
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>
