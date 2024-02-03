@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit;
 
 public class ReceiveDataTask extends ThreadPoolExecutor {
 
-    private static final int PORT_NUMBER = 1357; // 영상 수신을 위한 포트 넘버
+    private static final int PORT_NUMBER = 1300; // 영상 수신을 위한 포트 넘버
     private volatile boolean stopReceiving = false;
     private ServerSocket serverSocket;
     private Socket clientSocket;

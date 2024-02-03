@@ -54,7 +54,7 @@ public class CameraPreview extends AppCompatActivity {
     // 데이터 송신
     private final String master_IP = "192.168.43.1";
 
-    private final int[] PORT = {13579, 2468}; // 결과값 송신을 위한 포트
+    private final int[] PORT = {3001, 3002}; // 결과값 송신을 위한 포트
     private boolean sendRunning = false;
     private final Handler handler = new Handler();
 
@@ -172,7 +172,7 @@ public class CameraPreview extends AppCompatActivity {
                 }
 
                 try {
-                    Socket clientSocket = new Socket(master_IP, 13579);
+                    Socket clientSocket = new Socket(master_IP, PORT[port_index]);
                     BufferedOutputStream outToServer = new BufferedOutputStream(clientSocket.getOutputStream());
 
                     byte[] byteArray = stringValue.getBytes();
@@ -193,9 +193,7 @@ public class CameraPreview extends AppCompatActivity {
             @Override
             public void run() {
                 try {
-                    Socket clientSocket = new Socket(master_IP, 2468);
-
-                    // seg이미지 전송
+                    Socket clientSocket = new Socket(master_IP, PORT[port_index]);
                     BufferedOutputStream outToServer = new BufferedOutputStream(clientSocket.getOutputStream());
                     ByteArrayOutputStream stream = new ByteArrayOutputStream();
                     maskdata.compress(Bitmap.CompressFormat.JPEG, 100, stream);
