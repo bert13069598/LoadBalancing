@@ -269,20 +269,36 @@ public class CameraPreview extends AppCompatActivity {
         handler.removeCallbacks(sendRunnable);
     }
 
-    private void send_disconnect(int port_index){
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
+    private void send_disconnect(int port_index) {
+        new Thread(() -> {
+            // detection
+            if (port_index == 0) {
                 String stringValue = "off";
-                try {
-                    Socket clientSocket = new Socket(master_IP, PORT[port_index]);
+                try (Socket clientSocket = new Socket(master_IP, PORT[port_index]);) {
+
                     BufferedOutputStream outToServer = new BufferedOutputStream(clientSocket.getOutputStream());
 
                     byte[] byteArray = stringValue.getBytes();
 
                     outToServer.write(byteArray);
-                    outToServer.flush(); // 버퍼 비우기
-                    clientSocket.close();
+                    outToServer.flush();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                // segmentation
+            } else if (port_index == 1) {
+                Bitmap bitmap = Bitmap.createBitmap(902, 270, Bitmap.Config.ARGB_8888);
+                bitmap.eraseColor(0x00000000);
+
+                try (Socket clientSocket = new Socket(master_IP, PORT[port_index]);) {
+                    BufferedOutputStream outToServer = new BufferedOutputStream(clientSocket.getOutputStream());
+                    ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
+
+                    byte[] byteArray = stream.toByteArray();
+
+                    outToServer.write(byteArray);
+                    outToServer.flush();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
