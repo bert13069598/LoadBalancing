@@ -4,13 +4,13 @@ plugins {
 }
 
 android {
-    compileSdk 30
+    compileSdk 34
     ndkVersion "23.1.7779620"
 
     defaultConfig {
         applicationId "com.example.demoproject"
         minSdkVersion 24
-        targetSdkVersion 30
+        targetSdkVersion 34
         versionCode 1
         versionName "1.0"
 
@@ -23,6 +23,7 @@ android {
         sourceSets {
             main {
                 proto {
+                    java.srcDirs += 'src/main/proto'
                     srcDir 'src/main/proto'
                 }
             }
@@ -46,16 +47,21 @@ android {
             path file('src/main/jni/CMakeLists.txt')
         }
     }
+    namespace 'com.example.demoproject'
 }
 
 dependencies {
 
-    implementation 'androidx.appcompat:appcompat:1.2.0'
-    implementation 'com.google.android.material:material:1.2.1'
-    implementation 'androidx.constraintlayout:constraintlayout:2.0.1'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.11.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
 
-    implementation 'gun0912.ted:tedpermission:2.2.3'
-    implementation 'com.google.protobuf:protobuf-lite:3.0.0'
+//    implementation 'gun0912.ted:tedpermission:2.2.3'
+    implementation 'com.google.protobuf:protobuf-java:3.19.3'
+
+    testImplementation 'junit:junit:'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
 }
 
 protobuf {
@@ -72,10 +78,10 @@ protobuf {
     generateProtoTasks {
         all().each { task ->
             task.builtins {
-                remove java
+                java {}
             }
             task.plugins {
-                javalite {}
+//                javalite {}
             }
         }
     }

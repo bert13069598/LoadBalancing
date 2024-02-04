@@ -1,2 +1,2 @@
-rootProject.name = "DemoProject"
+rootProject.name = "LBServer"
 include ':app'
