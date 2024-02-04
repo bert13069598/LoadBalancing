@@ -22,6 +22,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import com.example.demoproject.Seg.ImageData;
+import com.google.protobuf.ByteString;
+
 public class CameraPreview extends AppCompatActivity {
 
     private final String TAG = "CameraPreview";
@@ -168,15 +171,22 @@ public class CameraPreview extends AppCompatActivity {
     // segmentation
     private void send_connect_seg(int port_index) {
         new Thread(() -> {
-            try (Socket clientSocket = new Socket(master_IP, PORT[port_index]);) {
-                BufferedOutputStream outToServer = new BufferedOutputStream(clientSocket.getOutputStream());
+            try (Socket clientSocket = new Socket(master_IP, PORT[port_index]);
+                 BufferedOutputStream outToServer = new BufferedOutputStream(clientSocket.getOutputStream())) {
+
+                // Assuming maskdata is a Bitmap object
                 ByteArrayOutputStream stream = new ByteArrayOutputStream();
                 maskdata.compress(Bitmap.CompressFormat.JPEG, 100, stream);
 
-                byte[] byteArray = stream.toByteArray();
+                // Create protobuf message
+                ImageData.Builder imageDataBuilder = ImageData.newBuilder();
+                imageDataBuilder.setImageData(ByteString.copyFrom(stream.toByteArray()));
+                ImageData imageDataProto = imageDataBuilder.build();
 
-                outToServer.write(byteArray);
-                outToServer.flush(); // 버퍼 비우기
+                // Serialize and send protobuf message
+                byte[] protobufBytes = imageDataProto.toByteArray();
+                outToServer.write(protobufBytes);
+                outToServer.flush(); // Flush the buffer
             } catch (IOException e) {
                 e.printStackTrace();
             }
