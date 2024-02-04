@@ -23,6 +23,7 @@ android {
         sourceSets {
             main {
                 proto {
+                    java.srcDirs += 'src/main/proto'
                     srcDir 'src/main/proto'
                 }
             }
@@ -55,7 +56,7 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:2.0.1'
 
     implementation 'gun0912.ted:tedpermission:2.2.3'
-    implementation 'com.google.protobuf:protobuf-lite:3.0.0'
+    implementation 'com.google.protobuf:protobuf-java:3.19.3'
 
     testImplementation 'junit:junit:4.+'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
@@ -76,10 +77,10 @@ protobuf {
     generateProtoTasks {
         all().each { task ->
             task.builtins {
-                remove java
+                java {}
             }
             task.plugins {
-                javalite {}
+//                javalite {}
             }
         }
     }
