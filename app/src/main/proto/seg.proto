@@ -2,4 +2,5 @@ syntax = "proto3";
 package com.example.demoproject;
 message ImageData {
     bytes imageData = 1;
+    bool run = 2;
 }

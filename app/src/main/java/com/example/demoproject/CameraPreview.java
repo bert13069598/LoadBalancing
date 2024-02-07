@@ -60,7 +60,7 @@ public class CameraPreview extends AppCompatActivity {
 
                         ImageData.Builder imageDataBuilder = ImageData.newBuilder();
                         imageDataBuilder.setImageData(ByteString.copyFrom(stream.toByteArray()));
-                        ImageData imageDataProto = imageDataBuilder.build();
+                        ImageData imageDataProto = imageDataBuilder.setRun(true).build();
 
                         byte[] protobufBytes = imageDataProto.toByteArray();
                         outToServer.write(protobufBytes);
@@ -163,19 +163,19 @@ public class CameraPreview extends AppCompatActivity {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                // segmentation
+            // segmentation
             } else if (port_index == 1) {
-                Bitmap bitmap = Bitmap.createBitmap(902, 270, Bitmap.Config.ARGB_8888);
-                bitmap.eraseColor(0x00000000);
-
                 try (Socket clientSocket = new Socket(master_IP, PORT[port_index]);) {
                     BufferedOutputStream outToServer = new BufferedOutputStream(clientSocket.getOutputStream());
                     ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
+                    maskdata.compress(Bitmap.CompressFormat.JPEG, 100, stream);
 
-                    byte[] byteArray = stream.toByteArray();
+                    ImageData.Builder imageDataBuilder = ImageData.newBuilder();
+                    imageDataBuilder.setImageData(ByteString.copyFrom(stream.toByteArray()));
+                    ImageData imageDataProto = imageDataBuilder.setRun(false).build();
 
-                    outToServer.write(byteArray);
+                    byte[] protobufBytes = imageDataProto.toByteArray();
+                    outToServer.write(protobufBytes);
                     outToServer.flush();
                 } catch (IOException e) {
                     e.printStackTrace();
