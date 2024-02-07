@@ -1,6 +1,5 @@
 package com.example.demoproject;
 
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
@@ -14,6 +13,9 @@ import android.widget.Spinner;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.demoproject.Seg.ImageData;
+import com.google.protobuf.ByteString;
+
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -22,30 +24,19 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import com.example.demoproject.Seg.ImageData;
-import com.google.protobuf.ByteString;
-
 public class CameraPreview extends AppCompatActivity {
 
     private final String TAG = "CameraPreview";
-    private ReceiveDataTask receiveDataTaskTask;
+    private Receiver receiveDataTaskTask;
     //private SendDataTask sendDataTask = new SendDataTask(CameraPreview.this);
     private ImageView detectView;
     private int port_index;
     private ExecutorService executorService;
     private String bboxdata = " ";
+    private Bitmap maskdata;
     private final Ncnn model = new Ncnn();
 
-    private Bitmap maskdata;
-    private Spinner spinnerCPUGPU;
-    private int current_model = 0;
     private int current_cpugpu = 0;
-    int corePoolSize = 2;
-    int maximumPoolSize = 4;
-    long keepAliveTime = 1;
-    private int nThreads;
-    private Bitmap receiveBitmap;
-    private final Object bitmapLock = new Object();
 
     // 데이터 송신
     private final String master_IP = "192.168.43.1";
@@ -77,7 +68,7 @@ public class CameraPreview extends AppCompatActivity {
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         port_index = getIntent().getIntExtra("port_index_key", -1);
 
-        nThreads = Runtime.getRuntime().availableProcessors();
+        int nThreads = Runtime.getRuntime().availableProcessors();
         executorService = Executors.newFixedThreadPool(nThreads);
         detectView = findViewById(R.id.detectView);
 
@@ -89,7 +80,7 @@ public class CameraPreview extends AppCompatActivity {
         long keepAliveTime = 1;
         receiveDataTaskTask = new Receiver(corePoolSize, maximumPoolSize, keepAliveTime, TimeUnit.SECONDS, callback);
 
-        spinnerCPUGPU = (Spinner) findViewById(R.id.spinnerCPUGPU);
+        Spinner spinnerCPUGPU = (Spinner) findViewById(R.id.spinnerCPUGPU);
         spinnerCPUGPU.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> arg0, View arg1, int position, long id) {
@@ -106,6 +97,7 @@ public class CameraPreview extends AppCompatActivity {
     }
 
     private void reload() {
+        int current_model = 0;
         if (!model.loadModel(getAssets(), current_model, current_cpugpu))
             Log.e(TAG, "model load failed");
     }
