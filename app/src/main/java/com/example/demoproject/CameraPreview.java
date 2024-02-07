@@ -33,15 +33,7 @@ public class CameraPreview extends AppCompatActivity {
     private ImageView detectView;
     private int port_index;
     private ExecutorService executorService;
-
-    // detection
-    //private final NanoDetNcnn nanodetncnn = new NanoDetNcnn();
     private String bboxdata = " ";
-
-    // segmentation
-    //private final Yolov8Ncnn yolov8ncnn = new Yolov8Ncnn();
-
-    // Both
     private final Ncnn model = new Ncnn();
 
     private Bitmap maskdata;
@@ -57,9 +49,7 @@ public class CameraPreview extends AppCompatActivity {
 
     // 데이터 송신
     private final String master_IP = "192.168.43.1";
-
     private final int[] PORT = {3001, 3002}; // 결과값 송신을 위한 포트
-    private boolean sendRunning = false;
     private final Handler handler = new Handler();
 
     private final Runnable sendRunnable = new Runnable() {
@@ -84,10 +74,18 @@ public class CameraPreview extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_camera_preview);
 
-        initsetting();
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        port_index = getIntent().getIntExtra("port_index_key", -1);
 
-        startSendingResults();
-        ConnectServer();
+        nThreads = Runtime.getRuntime().availableProcessors();
+        executorService = Executors.newFixedThreadPool(nThreads);
+        detectView = findViewById(R.id.detectView);
+
+        handler.post(sendRunnable);
+
+        receiveDataTaskTask = new ReceiveDataTask(corePoolSize, maximumPoolSize, keepAliveTime, TimeUnit.SECONDS);
+        receiveDataTaskTask.setDataReceivedCallback(callback);
+        receiveDataTaskTask.startReceiving();
 
         spinnerCPUGPU = (Spinner) findViewById(R.id.spinnerCPUGPU);
         spinnerCPUGPU.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -98,46 +96,16 @@ public class CameraPreview extends AppCompatActivity {
                     reload();
                 }
             }
-
             @Override
             public void onNothingSelected(AdapterView<?> arg0) {
             }
         });
-
         reload();
     }
 
     private void reload() {
-
-        boolean ret_init_model = model.loadModel(getAssets(), current_model, current_cpugpu);
-        if (!ret_init_model)
+        if (!model.loadModel(getAssets(), current_model, current_cpugpu))
             Log.e(TAG, "model load failed");
-    }
-
-    private void initsetting() {
-        //화면 계속 켜진 상태로 유지
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        port_index = getIntent().getIntExtra("port_index_key", -1);
-
-        Log.e(TAG, "port_index : " + port_index);
-
-        nThreads = Runtime.getRuntime().availableProcessors();
-        executorService = Executors.newFixedThreadPool(nThreads);
-        detectView = findViewById(R.id.detectView);
-    }
-
-    @Override
-    public void onBackPressed() {
-        send_disconnect(port_index);
-        stopSendingResults();
-        receiveDataTaskTask.stopReceiving();
-
-        Intent intent = new Intent(CameraPreview.this, MainActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
-        startActivity(intent);
-
-        super.onBackPressed();
-        finish();
     }
 
     @Override
@@ -145,8 +113,10 @@ public class CameraPreview extends AppCompatActivity {
         super.onDestroy();
 
         send_disconnect(port_index);
-        stopSendingResults();
 
+        handler.removeCallbacks(sendRunnable);
+
+        receiveDataTaskTask.stopReceiving();
         executorService.shutdown();
         handler.removeCallbacksAndMessages(null);
     }
@@ -193,17 +163,6 @@ public class CameraPreview extends AppCompatActivity {
         }).start();
     }
 
-    // 수신부
-    private void DisconnectServer() {
-        receiveDataTaskTask.stopReceiving();
-    }
-
-    private void ConnectServer() {
-        receiveDataTaskTask = new ReceiveDataTask(corePoolSize, maximumPoolSize, keepAliveTime, TimeUnit.SECONDS);
-        receiveDataTaskTask.setDataReceivedCallback(callback);
-        receiveDataTaskTask.startReceiving();
-    }
-
     ReceiveDataTask.DataReceivedCallback callback = new ReceiveDataTask.DataReceivedCallback() {
         @Override
         public void onDataReceived(byte[] data) {
@@ -218,26 +177,13 @@ public class CameraPreview extends AppCompatActivity {
                         } else if (port_index == 1) {
                             maskdata = model.predict_seg(detectView, receiveBitmap);
                         }
-
                     });
-
                 }
             } else {
                 Log.e(TAG, "Received data is null.");
             }
         }
     };
-
-    // 송신부
-    private void startSendingResults() {
-        sendRunning = true;
-        handler.post(sendRunnable);
-    }
-
-    private void stopSendingResults() {
-        sendRunning = false;
-        handler.removeCallbacks(sendRunnable);
-    }
 
     private void send_disconnect(int port_index) {
         new Thread(() -> {
