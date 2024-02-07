@@ -21,7 +21,7 @@ public class MainActivity extends AppCompatActivity {
     @SuppressLint("UseSwitchCompatOrMaterialCode")
     Switch switch2;
 
-    private int port_index = 0; // 1 = Device1, 2 = Device2, 0 = 선택x
+    boolean[] sw = new boolean[2];
     private CameraPreview cameraPreview;
 
     @Override
@@ -30,7 +30,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         cameraPreview = new CameraPreview();
 
-        // 검색, 전송 버튼 설정
         Button scanButton = findViewById(R.id.scan_button);
         Button serverButton = findViewById(R.id.server_button);
 
@@ -40,45 +39,22 @@ public class MainActivity extends AppCompatActivity {
 
         view_connect_device();
 
-        // 검색 버튼 눌렀을 때
         scanButton.setOnClickListener(view -> view_connect_device());
 
-        // 수신 버튼 눌렀을 때
         serverButton.setOnClickListener(view -> {
-            switch (port_index) {
-                case 0:
-                    Toast.makeText(MainActivity.this, "Choose at least 1 option.", Toast.LENGTH_SHORT).show();
-                    break;
-
-                // Device1
-                case 1:
-                    startCameraPreview(0);
-                    break;
-
-                // Device2
-                case 2:
-                    startCameraPreview(1);
-                    break;
-            }
+            if (sw[0] && sw[1])
+                Toast.makeText(MainActivity.this, "Choose only 1 option.", Toast.LENGTH_SHORT).show();
+            else if (sw[0])
+                startCameraPreview(0);
+            else if (sw[1])
+                startCameraPreview(1);
+            else
+                Toast.makeText(MainActivity.this, "Choose at least 1 option.", Toast.LENGTH_SHORT).show();
         });
 
-        // Devie switch1 눌렀을 때
-        switch1.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            if (isChecked) {
-                port_index = 1;
-            } else {
-                port_index = 0;
-            }
-        });
+        switch1.setOnCheckedChangeListener((buttonView, isChecked) -> sw[0] = isChecked);
+        switch2.setOnCheckedChangeListener((buttonView, isChecked) -> sw[1] = isChecked);
 
-        // Devie switch2 눌렀을 때
-        switch2.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            if (isChecked) {
-                port_index = 2;
-            } else {
-                port_index = 0;
-            }
-        });
 
     }
 
