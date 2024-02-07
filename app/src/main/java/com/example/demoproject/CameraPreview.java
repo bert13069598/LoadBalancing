@@ -47,12 +47,27 @@ public class CameraPreview extends AppCompatActivity {
         @Override
         public void run() {
             executorService.submit(() -> {
-                if (port_index == 0) {
-                    send_connect_det(port_index);
-                } else if (port_index == 1) {
-                    if (maskdata != null) {
-                        send_connect_seg(port_index);
+                try (Socket clientSocket = new Socket(master_IP, PORT[port_index]);
+                     BufferedOutputStream outToServer = new BufferedOutputStream(clientSocket.getOutputStream())) {
+
+                    if (port_index == 0) {
+                        byte[] byteArray = bboxdata.getBytes();
+                        outToServer.write(byteArray);
+                        outToServer.flush();
+                    } else if (port_index == 1 && maskdata != null) {
+                        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                        maskdata.compress(Bitmap.CompressFormat.JPEG, 100, stream);
+
+                        ImageData.Builder imageDataBuilder = ImageData.newBuilder();
+                        imageDataBuilder.setImageData(ByteString.copyFrom(stream.toByteArray()));
+                        ImageData imageDataProto = imageDataBuilder.build();
+
+                        byte[] protobufBytes = imageDataProto.toByteArray();
+                        outToServer.write(protobufBytes);
+                        outToServer.flush();
                     }
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
             });
             handler.postDelayed(this, 10);
@@ -113,48 +128,6 @@ public class CameraPreview extends AppCompatActivity {
         receiveDataTaskTask.stopReceiving();
         executorService.shutdown();
         handler.removeCallbacksAndMessages(null);
-    }
-
-
-    // detection
-    private void send_connect_det(int port_index) {
-        new Thread(() -> {
-            try (Socket clientSocket = new Socket(master_IP, PORT[port_index]);) {
-                BufferedOutputStream outToServer = new BufferedOutputStream(clientSocket.getOutputStream());
-
-                byte[] byteArray = bboxdata.getBytes();
-
-                outToServer.write(byteArray);
-                outToServer.flush(); // 버퍼 비우기
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }).start();
-    }
-
-    // segmentation
-    private void send_connect_seg(int port_index) {
-        new Thread(() -> {
-            try (Socket clientSocket = new Socket(master_IP, PORT[port_index]);
-                 BufferedOutputStream outToServer = new BufferedOutputStream(clientSocket.getOutputStream())) {
-
-                // Assuming maskdata is a Bitmap object
-                ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                maskdata.compress(Bitmap.CompressFormat.JPEG, 100, stream);
-
-                // Create protobuf message
-                ImageData.Builder imageDataBuilder = ImageData.newBuilder();
-                imageDataBuilder.setImageData(ByteString.copyFrom(stream.toByteArray()));
-                ImageData imageDataProto = imageDataBuilder.build();
-
-                // Serialize and send protobuf message
-                byte[] protobufBytes = imageDataProto.toByteArray();
-                outToServer.write(protobufBytes);
-                outToServer.flush(); // Flush the buffer
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }).start();
     }
 
     Receiver.DataReceivedCallback callback = data -> {
