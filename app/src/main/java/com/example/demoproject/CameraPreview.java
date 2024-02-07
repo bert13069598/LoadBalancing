@@ -83,9 +83,11 @@ public class CameraPreview extends AppCompatActivity {
 
         handler.post(sendRunnable);
 
-        receiveDataTaskTask = new ReceiveDataTask(corePoolSize, maximumPoolSize, keepAliveTime, TimeUnit.SECONDS);
-        receiveDataTaskTask.setDataReceivedCallback(callback);
-        receiveDataTaskTask.startReceiving();
+        // Receiver
+        int corePoolSize = 2;
+        int maximumPoolSize = 4;
+        long keepAliveTime = 1;
+        receiveDataTaskTask = new Receiver(corePoolSize, maximumPoolSize, keepAliveTime, TimeUnit.SECONDS, callback);
 
         spinnerCPUGPU = (Spinner) findViewById(R.id.spinnerCPUGPU);
         spinnerCPUGPU.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -163,24 +165,19 @@ public class CameraPreview extends AppCompatActivity {
         }).start();
     }
 
-    ReceiveDataTask.DataReceivedCallback callback = new ReceiveDataTask.DataReceivedCallback() {
-        @Override
-        public void onDataReceived(byte[] data) {
-            if (data != null) {
-                // 스레드 동기화 -> 이 작업이 끝나기 전까지 데이터 접근x
-                synchronized (bitmapLock) {
-                    receiveBitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
+    Receiver.DataReceivedCallback callback = data -> {
+        if (data != null) {
+            // 스레드 동기화 -> 이 작업이 끝나기 전까지 데이터 접근x
+            synchronized (new Object()) {
+                Bitmap receiveBitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
 
-                    runOnUiThread(() -> {
-                        if (port_index == 0) {
-                            bboxdata = model.predict_det(detectView, receiveBitmap);
-                        } else if (port_index == 1) {
-                            maskdata = model.predict_seg(detectView, receiveBitmap);
-                        }
-                    });
-                }
-            } else {
-                Log.e(TAG, "Received data is null.");
+                runOnUiThread(() -> {
+                    if (port_index == 0) {
+                        bboxdata = model.predict_det(detectView, receiveBitmap);
+                    } else if (port_index == 1) {
+                        maskdata = model.predict_seg(detectView, receiveBitmap);
+                    }
+                });
             }
         }
     };
