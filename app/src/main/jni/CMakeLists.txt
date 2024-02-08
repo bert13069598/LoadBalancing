@@ -8,11 +8,5 @@ find_package(OpenCV REQUIRED core imgproc)
 set(ncnn_DIR ${CMAKE_SOURCE_DIR}/ncnn-20230816-android/${ANDROID_ABI}/lib/cmake/ncnn)
 find_package(ncnn REQUIRED)
 
-#add_library(nanodetncnn SHARED nanodetncnn.cpp nanodet.cpp)
-#target_link_libraries(nanodetncnn ncnn ${OpenCV_LIBS} mediandk)
-
-#add_library(yolov8ncnn SHARED yolov8ncnn.cpp yolov8.cpp)
-#target_link_libraries(yolov8ncnn ncnn ${OpenCV_LIBS} mediandk)
-
 add_library(ncnntotal SHARED ncnn.cpp yolov8.cpp nanodet.cpp)
 target_link_libraries(ncnntotal ncnn ${OpenCV_LIBS} mediandk)
