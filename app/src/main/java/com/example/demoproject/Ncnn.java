@@ -6,7 +6,6 @@ import android.widget.ImageView;
 
 public class Ncnn {
     public native boolean loadModel(AssetManager mgr,
-                                    int modelid,
                                     int cpugpu);
 
     public native String predict_det(ImageView imageView, Bitmap bitmap);

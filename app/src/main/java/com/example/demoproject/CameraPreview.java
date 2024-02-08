@@ -13,6 +13,7 @@ import android.widget.Spinner;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.demoproject.Det.Bbox;
 import com.example.demoproject.Seg.ImageData;
 import com.google.protobuf.ByteString;
 
@@ -51,7 +52,11 @@ public class CameraPreview extends AppCompatActivity {
                      BufferedOutputStream outToServer = new BufferedOutputStream(clientSocket.getOutputStream())) {
 
                     if (port_index == 0) {
-                        byte[] byteArray = bboxdata.getBytes();
+                        Bbox.Builder bboxBuilder = Bbox.newBuilder();
+                        bboxBuilder.setBbox(bboxdata);
+                        Bbox bboxMessage = bboxBuilder.setRun(true).build();
+
+                        byte[] byteArray = bboxMessage.toByteArray();
                         outToServer.write(byteArray);
                         outToServer.flush();
                     } else if (port_index == 1 && maskdata != null) {
@@ -112,8 +117,7 @@ public class CameraPreview extends AppCompatActivity {
     }
 
     private void reload() {
-        int current_model = 0;
-        if (!model.loadModel(getAssets(), current_model, current_cpugpu))
+        if (!model.loadModel(getAssets(), current_cpugpu))
             Log.e(TAG, "model load failed");
     }
 
@@ -151,13 +155,14 @@ public class CameraPreview extends AppCompatActivity {
         new Thread(() -> {
             // detection
             if (port_index == 0) {
-                String stringValue = "off";
                 try (Socket clientSocket = new Socket(master_IP, PORT[port_index]);) {
-
                     BufferedOutputStream outToServer = new BufferedOutputStream(clientSocket.getOutputStream());
 
-                    byte[] byteArray = stringValue.getBytes();
+                    Bbox.Builder bboxBuilder = Bbox.newBuilder();
+                    bboxBuilder.setBbox(bboxdata);
+                    Bbox bboxMessage = bboxBuilder.setRun(false).build();
 
+                    byte[] byteArray = bboxMessage.toByteArray();
                     outToServer.write(byteArray);
                     outToServer.flush();
                 } catch (IOException e) {

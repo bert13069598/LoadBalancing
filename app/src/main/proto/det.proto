@@ -1,14 +1,6 @@
 syntax = "proto3";
 package com.example.demoproject;
 message Bbox {
-    int32 cls = 1;
-    float prob = 2;
-    float x = 3;
-    float y = 4;
-    float w = 5;
-    float h = 6;
-}
-
-message BboxList {
-    repeated Bbox bboxes = 1;
+    string bbox = 1;
+    bool run = 2;
 }
