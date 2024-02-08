@@ -162,15 +162,10 @@ JNICALL
 Java_com_example_demoproject_Ncnn_loadModel(JNIEnv *env,
                                                              jobject thiz,
                                                              jobject assetManager,
-                                                             jint modelid,
                                                              jint cpugpu) {
     AAssetManager *mgr = AAssetManager_fromJava(env, assetManager);
 
-    __android_log_print(ANDROID_LOG_DEBUG, "ncnn", "loadModel %p", mgr);
-
     bool use_gpu = (int) cpugpu == 1;
-
-    // reload
     {
         ncnn::MutexLockGuard g(lock);
 
@@ -181,7 +176,6 @@ Java_com_example_demoproject_Ncnn_loadModel(JNIEnv *env,
             g_nanodet->load(mgr, use_gpu);
             }
     }
-
     return JNI_TRUE;
 }
 
@@ -193,25 +187,13 @@ JNIEXPORT jstring JNICALL Java_com_example_demoproject_Ncnn_predict_1det(JNIEnv 
                                                                            jobject imageView,
                                                                            jobject bitmap)
 {
-
-    // RGB형식으로 변경
     AndroidBitmapInfo info;
-    if (AndroidBitmap_getInfo(env, bitmap, &info) < 0) {
-        // Error handling
+    void *bitmapPixels;
+    if (AndroidBitmap_getInfo(env,
+                              bitmap, &info) < 0 ||
+        info.format != ANDROID_BITMAP_FORMAT_RGBA_8888 ||
+        AndroidBitmap_lockPixels(env, bitmap, &bitmapPixels) < 0)
         return JNI_FALSE;
-    }
-
-    if (info.format != ANDROID_BITMAP_FORMAT_RGBA_8888) {
-        // Only support RGBA_8888 format, you may need to convert other formats
-        return JNI_FALSE;
-    }
-
-    // Get the pointer to bitmap pixels
-    void* bitmapPixels;
-    if (AndroidBitmap_lockPixels(env, bitmap, &bitmapPixels) < 0) {
-        // Error handling
-        return JNI_FALSE;
-    }
 
     // Create a cv::Mat from the bitmap data
     int width = info.width;
@@ -222,7 +204,9 @@ JNIEXPORT jstring JNICALL Java_com_example_demoproject_Ncnn_predict_1det(JNIEnv 
 
     // 이미지 뷰 업데이트 JNI 호출
     jclass imageViewClass = env->GetObjectClass(imageView);
-    jmethodID setImageBitmapMethod = env->GetMethodID(imageViewClass, "setImageBitmap", "(Landroid/graphics/Bitmap;)V");
+    jmethodID setImageBitmapMethod = env->GetMethodID(imageViewClass,
+                                                      "setImageBitmap",
+                                                      "(Landroid/graphics/Bitmap;)V");
 
     ncnn::MutexLockGuard g(lock);
 
@@ -262,21 +246,13 @@ JNIEXPORT jobject JNICALL Java_com_example_demoproject_Ncnn_predict_1seg(JNIEnv 
                                                                           jobject imageView,
                                                                           jobject bitmap) {
 
-    // RGB형식으로 변경
     AndroidBitmapInfo info;
-    if (AndroidBitmap_getInfo(env, bitmap, &info) < 0) {
+    void *bitmapPixels;
+    if (AndroidBitmap_getInfo(env,
+                              bitmap, &info) < 0 ||
+        info.format != ANDROID_BITMAP_FORMAT_RGBA_8888 ||
+        AndroidBitmap_lockPixels(env, bitmap, &bitmapPixels) < 0)
         return JNI_FALSE;
-    }
-
-    if (info.format != ANDROID_BITMAP_FORMAT_RGBA_8888) {
-        return JNI_FALSE;
-    }
-
-    // Get the pointer to bitmap pixels
-    void* bitmapPixels;
-    if (AndroidBitmap_lockPixels(env, bitmap, &bitmapPixels) < 0) {
-        return JNI_FALSE;
-    }
 
     // Create a cv::Mat from the bitmap data
     int width = info.width;

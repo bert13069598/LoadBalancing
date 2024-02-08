@@ -112,8 +112,7 @@ public class CameraPreview extends AppCompatActivity {
     }
 
     private void reload() {
-        int current_model = 0;
-        if (!model.loadModel(getAssets(), current_model, current_cpugpu))
+        if (!model.loadModel(getAssets(), current_cpugpu))
             Log.e(TAG, "model load failed");
     }
 
