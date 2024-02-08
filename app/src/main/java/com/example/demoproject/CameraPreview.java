@@ -35,7 +35,7 @@ public class CameraPreview extends AppCompatActivity {
     private ExecutorService executorService;
     private String bboxdata = " ";
     private Bitmap maskdata;
-    private final Ncnn model = new Ncnn();
+    private final NCNN model = new NCNN();
 
     private int current_cpugpu = 0;
 
