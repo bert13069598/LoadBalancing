@@ -159,10 +159,10 @@ JNIEXPORT void JNI_OnUnload(JavaVM * vm, void * reserved) {
 JNIEXPORT jboolean
 
 JNICALL
-Java_com_example_demoproject_Ncnn_loadModel(JNIEnv *env,
-                                                             jobject thiz,
-                                                             jobject assetManager,
-                                                             jint cpugpu) {
+Java_com_example_demoproject_NCNN_loadModel(JNIEnv *env,
+                                            jobject thiz,
+                                            jobject assetManager,
+                                            jint cpugpu) {
     AAssetManager *mgr = AAssetManager_fromJava(env, assetManager);
 
     bool use_gpu = (int) cpugpu == 1;
@@ -182,10 +182,10 @@ Java_com_example_demoproject_Ncnn_loadModel(JNIEnv *env,
 
 
 // detection
-JNIEXPORT jstring JNICALL Java_com_example_demoproject_Ncnn_predict_1det(JNIEnv *env,
-                                                                           jobject thiz,
-                                                                           jobject imageView,
-                                                                           jobject bitmap)
+JNIEXPORT jstring JNICALL Java_com_example_demoproject_NCNN_predict_1det(JNIEnv *env,
+                                                                         jobject thiz,
+                                                                         jobject imageView,
+                                                                         jobject bitmap)
 {
     AndroidBitmapInfo info;
     void *bitmapPixels;
@@ -241,10 +241,10 @@ JNIEXPORT jstring JNICALL Java_com_example_demoproject_Ncnn_predict_1det(JNIEnv 
 }
 
 // segmentation
-JNIEXPORT jobject JNICALL Java_com_example_demoproject_Ncnn_predict_1seg(JNIEnv *env,
-                                                                          jobject thiz,
-                                                                          jobject imageView,
-                                                                          jobject bitmap) {
+JNIEXPORT jobject JNICALL Java_com_example_demoproject_NCNN_predict_1seg(JNIEnv *env,
+                                                                         jobject thiz,
+                                                                         jobject imageView,
+                                                                         jobject bitmap) {
 
     AndroidBitmapInfo info;
     void *bitmapPixels;

@@ -22,13 +22,11 @@ public class MainActivity extends AppCompatActivity {
     Switch switch2;
 
     boolean[] sw = new boolean[2];
-    private CameraPreview cameraPreview;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        cameraPreview = new CameraPreview();
 
         Button scanButton = findViewById(R.id.scan_button);
         Button serverButton = findViewById(R.id.server_button);
@@ -36,6 +34,8 @@ public class MainActivity extends AppCompatActivity {
         textView = findViewById(R.id.state_textview);
         switch1 = findViewById(R.id.device_switch1);
         switch2 = findViewById(R.id.device_switch2);
+        switch1.setOnCheckedChangeListener((buttonView, isChecked) -> sw[0] = isChecked);
+        switch2.setOnCheckedChangeListener((buttonView, isChecked) -> sw[1] = isChecked);
 
         view_connect_device();
 
@@ -51,11 +51,6 @@ public class MainActivity extends AppCompatActivity {
             else
                 Toast.makeText(MainActivity.this, "Choose at least 1 option.", Toast.LENGTH_SHORT).show();
         });
-
-        switch1.setOnCheckedChangeListener((buttonView, isChecked) -> sw[0] = isChecked);
-        switch2.setOnCheckedChangeListener((buttonView, isChecked) -> sw[1] = isChecked);
-
-
     }
 
     @SuppressLint("SetTextI18n")
@@ -70,7 +65,6 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 textView.setText("You should connect Master Device.");
             }
-
         }
     }
 
@@ -91,15 +85,10 @@ public class MainActivity extends AppCompatActivity {
 
     // CameraPreview 시작
     private void startCameraPreview(int port_index) {
-
-        if (cameraPreview != null) {
-            cameraPreview.finish();  // Finish the current instance
-            cameraPreview = null;    // Set the reference to null
-        }
-
         Intent intent = new Intent(MainActivity.this, CameraPreview.class);
         intent.putExtra("port_index_key", port_index);
         startActivity(intent);
+        switch1.setChecked(false);
+        switch2.setChecked(false);
     }
-
 }

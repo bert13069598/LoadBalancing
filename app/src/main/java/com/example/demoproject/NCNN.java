@@ -4,7 +4,7 @@ import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.widget.ImageView;
 
-public class Ncnn {
+public class NCNN {
     public native boolean loadModel(AssetManager mgr,
                                     int cpugpu);
 
