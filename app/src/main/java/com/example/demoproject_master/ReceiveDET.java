@@ -10,6 +10,7 @@ import com.example.demoproject.Det.Bbox;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.ExecutorService;
@@ -25,6 +26,7 @@ public class ReceiveDET implements Runnable {
     public static final int MESSAGE_DET_DATA = 1;
 
     ExecutorService executorService = Executors.newFixedThreadPool(3);
+    WeakReference<ExecutorService> executorServiceRef = new WeakReference<>(executorService);
 
     public ReceiveDET(int serverPort, Handler uiHandler, TextView device1_state) {
         this.serverPort = serverPort;
@@ -35,11 +37,12 @@ public class ReceiveDET implements Runnable {
     @SuppressLint("SetTextI18n")
     @Override
     public void run() {
+        WeakReference<Handler> uiHandlerRef = new WeakReference<>(uiHandler);
         try (ServerSocket serverSocket = new ServerSocket(serverPort)) {
             while (!Thread.interrupted()) {
                 Socket clientSocket = serverSocket.accept();
 
-                executorService.submit(() -> {
+                executorServiceRef.get().submit(() -> {
                     try (BufferedInputStream inFromClient = new BufferedInputStream(clientSocket.getInputStream());
                          ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
                         byte[] data = new byte[1];
@@ -57,7 +60,7 @@ public class ReceiveDET implements Runnable {
                         String receivedText = bbox.getBbox();
                         boolean run = bbox.getRun();
 
-                        uiHandler.post(() -> {
+                        uiHandlerRef.get().post(() -> {
                             if (run)
                                 device1_state.setText("on");
                             else
@@ -65,7 +68,7 @@ public class ReceiveDET implements Runnable {
                         });
 
                         Message message = uiHandler.obtainMessage(MESSAGE_DET_DATA, receivedText);
-                        uiHandler.sendMessage(message);
+                        uiHandlerRef.get().sendMessage(message);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }

@@ -12,6 +12,7 @@ import com.example.demoproject.Seg.ImageData;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.ExecutorService;
@@ -26,6 +27,7 @@ public class ReceiveSEG implements Runnable {
     private final int serverPort;
     public static final int MESSAGE_SEG_DATA = 2;
     ExecutorService executorService = Executors.newFixedThreadPool(5);
+    WeakReference<ExecutorService> executorServiceRef = new WeakReference<>(executorService);
 
     public ReceiveSEG(int serverPort, Handler uiHandler, TextView device2_state) {
         this.serverPort = serverPort;
@@ -36,11 +38,12 @@ public class ReceiveSEG implements Runnable {
     @SuppressLint("SetTextI18n")
     @Override
     public void run() {
+        WeakReference<Handler> uiHandlerRef = new WeakReference<>(uiHandler);
         try (ServerSocket serverSocket = new ServerSocket(serverPort)) {
             while (!Thread.interrupted()) {
                 Socket clientSocket = serverSocket.accept();
 
-                executorService.submit(() -> {
+                executorServiceRef.get().submit(() -> {
                     try (BufferedInputStream inFromClient = new BufferedInputStream(clientSocket.getInputStream());
                          ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
                         byte[] data = new byte[1];
@@ -59,15 +62,15 @@ public class ReceiveSEG implements Runnable {
                         boolean run = imageDataProto.getRun();
                         Bitmap receiveBitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
 
-                        uiHandler.post(() -> {
+                        uiHandlerRef.get().post(() -> {
                             if (run)
                                 device2_state.setText("on");
                             else
                                 device2_state.setText("off");
                         });
 
-                        Message message = uiHandler.obtainMessage(MESSAGE_SEG_DATA, receiveBitmap);
-                        uiHandler.sendMessage(message);
+                        Message message = uiHandlerRef.get().obtainMessage(MESSAGE_SEG_DATA, receiveBitmap);
+                        uiHandlerRef.get().sendMessage(message);
 
                     } catch (IOException e) {
                         e.printStackTrace();
