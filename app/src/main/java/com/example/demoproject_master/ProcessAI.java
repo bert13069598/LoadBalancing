@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
 public class ProcessAI implements TextureView.SurfaceTextureListener {
 
     protected CameraHandler cameraHandler;
